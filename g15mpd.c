@@ -544,7 +544,7 @@ void status_changed(MpdObj *mi, ChangedStatusType what)
     }
 
     if(what&MPD_CST_VOLUME){
-        voltimeout=500;
+        voltimeout=100;
         track_info.volume = mpd_status_get_volume(mi);
     }
 
@@ -604,6 +604,7 @@ int main(int argc, char **argv)
     for(eventdev=0;eventdev<127;eventdev++) {
         snprintf(evdev_name,127,"/dev/input/event%i",eventdev);
         if ((mmedia_fd = open(evdev_name, O_NONBLOCK|O_RDONLY)) < 0) {
+            // ignore errors when opening devices
             //printf("error opening interface %i\n",eventdev);
         } else {
             ioctl(mmedia_fd, EVIOCGNAME(sizeof(devname)), devname);
@@ -674,6 +675,8 @@ int main(int argc, char **argv)
 
         do{
             pthread_mutex_lock(&daemon_mutex);
+            if(voltimeout) 
+               --voltimeout;
             if(mute){
                 volume_adjust = 0;
                 mute = 0;
@@ -705,7 +708,7 @@ int main(int argc, char **argv)
                     //printf("volume %d -> %d\n", volume, volume_new);
                     mpd_status_set_volume (obj,volume_new);
                 }
-                voltimeout=500;
+                voltimeout=100;
                 muted_volume=0;
             }
             mpd_status_update(obj);
