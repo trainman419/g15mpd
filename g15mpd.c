@@ -604,14 +604,19 @@ int main(int argc, char **argv)
     for(eventdev=0;eventdev<127;eventdev++) {
         snprintf(evdev_name,127,"/dev/input/event%i",eventdev);
         if ((mmedia_fd = open(evdev_name, O_NONBLOCK|O_RDONLY)) < 0) {
-            printf("error opening interface %i\n",eventdev);
+            //printf("error opening interface %i\n",eventdev);
+        } else {
+            ioctl(mmedia_fd, EVIOCGNAME(sizeof(devname)), devname);
+            printf("Device Name %s on %s\n", devname, evdev_name);
+            if(0==strncmp(devname,"Logitech Logitech Gaming Keyboard",256)){
+                printf("Found device: \"%s\" on %s ", devname,evdev_name);
+                break;
+            } else if(0==strncmp(devname,"G15 Gaming Keyboard",256)){
+                printf("Found device: \"%s\" on %s ", devname,evdev_name);
+                break;
+            }else
+                close(mmedia_fd);
         }
-        ioctl(mmedia_fd, EVIOCGNAME(sizeof(devname)), devname);
-        if(0==strncmp(devname,"Logitech Logitech Gaming Keyboard",256)){
-            printf("Found device: \"%s\" on %s ", devname,evdev_name);
-            break;
-        }else
-            close(mmedia_fd);
     }
     if (mmedia_fd) { // we assume that the next event device is the multimedia keys
         close(mmedia_fd);
